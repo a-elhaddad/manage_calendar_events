@@ -176,7 +176,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         Uri uri = Events.CONTENT_URI;
         String selection =
                 Events.CALENDAR_ID + " = " + calendarId + " AND " + CalendarContract.Instances._ID
-                        + " = " + eventId;
+                        + " = '" + eventId+"'";
 
         cur = cr.query(uri, mProjection, selection, null, null);
         CalendarEvent event = null;
@@ -235,7 +235,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
             } else {
                 String selection =
                         Events.CALENDAR_ID + " = " + calendarId + " AND " + CalendarContract.Instances._ID
-                                + " = " + eventId;
+                                + " = '" + eventId+"'";
                 int updCount = cr.update(Events.CONTENT_URI, values, selection,
                         null);
             }
@@ -281,7 +281,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
                 };
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
-        String selection = CalendarContract.Reminders.EVENT_ID + " = " + eventId;
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId+"'";
 //        String[] selectionArgs = new String[]{"2"};
 
         cur = cr.query(uri, mProjection, selection, null, null);
@@ -331,7 +331,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
 
-        String selection = CalendarContract.Reminders.EVENT_ID + " = " + event.getEventId();
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + event.getEventId()+"'";
         int updCount = activity.getContentResolver()
                 .update(uri, contentValues, selection, null);
         return updCount;
@@ -343,7 +343,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         }
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
-        String selection = CalendarContract.Reminders.EVENT_ID + " = " + eventId;
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId+"'";
 
         int updCount = activity.getContentResolver().delete(uri, selection, null);
         return updCount;
