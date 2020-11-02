@@ -217,6 +217,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         String currentTimeZone = java.util.Calendar.getInstance().getTimeZone().getDisplayName();
         String eventId = event.getEventId() != null ? event.getEventId() : null;
         ContentValues values = new ContentValues();
+        values.put(Events.UID_2445, event.getEventId());
         values.put(Events.DTSTART, event.getStartDate());
         values.put(Events.DTEND, event.getEndDate());
         values.put(Events.TITLE, event.getTitle());
@@ -227,18 +228,18 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         values.put(Events.EVENT_LOCATION, event.getLocation());
 
         try {
-            if (eventId == null) {
+        /*    if (eventId == null) {*/
                 Uri uri = cr.insert(Events.CONTENT_URI, values);
                 // get the event ID that is the last element in the Uri
                 eventId = Long.parseLong(uri.getLastPathSegment()) + "";
                 event.setEventId(eventId);
-            } else {
+            /*} else {
                 String selection =
-                        Events.CALENDAR_ID + " = " + calendarId + " AND " + CalendarContract.Instances._ID
+                        Events.CALENDAR_ID + " = '" + calendarId + "' AND " + CalendarContract.Instances._ID
                                 + " = '" + eventId+"'";
                 int updCount = cr.update(Events.CONTENT_URI, values, selection,
                         null);
-            }
+            }*/
         } catch (Exception e) {
             Log.e("XXX", e.getMessage());
         }
@@ -250,8 +251,8 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         }
         Uri uri = Events.CONTENT_URI;
         String selection =
-                Events.CALENDAR_ID + " = " + calendarId + " AND " + CalendarContract.Instances._ID
-                        + " = " + eventId;
+                Events.CALENDAR_ID + " = " + calendarId + " AND " + Events.UID_2445
+                        + " = '" + eventId+"'";
 
         int updCount = activity.getContentResolver().delete(uri, selection, null);
         // Log.d("XXX", "updCount is " + updCount);
