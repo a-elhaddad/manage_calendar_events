@@ -60,10 +60,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         String[] mProjection =
                 {
                         Calendars._ID,
-                        Calendars.ACCOUNT_NAME,
                         Calendars.CALENDAR_DISPLAY_NAME,
-                        Calendars.OWNER_ACCOUNT,
-                        Calendars.CALENDAR_ACCESS_LEVEL
                 };
 
         Uri uri = Calendars.CONTENT_URI;
@@ -71,27 +68,51 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         if (!hasPermissions()) {
             requestPermissions();
         }
-        cur = cr.query(uri, mProjection, null, null, null);
-
         try {
-            while (cur.moveToNext()) {
-                String calenderId = cur.getLong(cur.getColumnIndex(Calendars._ID)) + "";
-                String displayName = cur
-                        .getString(cur.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME));
-                String accountName = cur
-                        .getString(cur.getColumnIndex(Calendars.ACCOUNT_NAME));
-                String ownerName = cur
-                        .getString(cur.getColumnIndex(Calendars.OWNER_ACCOUNT));
-                Calendar calendar = new Calendar(calenderId, displayName, accountName, ownerName);
-                // Log.d("XXX", calendar.toString());
-                calendarList.add(calendar);
+            Cursor cursor;
+
+            if (android.os.Build.VERSION.SDK_INT <= 7) {
+                cursor = cr.query(Uri.parse("content://calendar/calendars"), new String[]{"_id", "displayName"}, null,
+                        null, null);
+
+            } else if (android.os.Build.VERSION.SDK_INT <= 14) {
+                cursor = cr.query(Uri.parse("content://com.android.calendar/calendars"),
+                        new String[]{"_id", "displayName"}, null, null, null);
+
+            } else {
+                cursor = cr.query(Uri.parse("content://com.android.calendar/calendars"),
+                        new String[]{"_id", "calendar_displayName"}, null, null, null);
+
             }
+
+            // Get calendars name
+            Log.i("@calendar", "Cursor count " + cursor.getCount());
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                String[] calendarNames = new String[cursor.getCount()];
+                // Get calendars id
+                int calendarIds[] = new int[cursor.getCount()];
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    calendarIds[i] = cursor.getInt(0);
+                    calendarNames[i] = cursor.getString(1);
+
+                    Calendar calendar = new Calendar(calendarIds[i] + "", calendarNames[i], "", "");
+                    // Log.d("XXX", calendar.toString());
+                    calendarList.add(calendar);
+
+                    Log.i("@calendar", "Calendar Name : " + calendarNames[i]);
+                    cursor.moveToNext();
+                }
+            } else {
+                Log.e("@calendar", "No calendar found in the device");
+            }
+
+
             return calendarList;
         } catch (Exception e) {
             Log.e("XXX", e.getMessage());
             return calendarList;
         } finally {
-            cur.close();
         }
 
     }
@@ -178,7 +199,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         Uri uri = Events.CONTENT_URI;
         String selection =
                 Events.CALENDAR_ID + " = " + calendarId + " AND " + CalendarContract.Instances._ID
-                        + " = '" + eventId+"'";
+                        + " = '" + eventId + "'";
 
         cur = cr.query(uri, mProjection, selection, null, null);
         CalendarEvent event = null;
@@ -230,11 +251,11 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         values.put(Events.EVENT_LOCATION, event.getLocation());
 
         try {
-        /*    if (eventId == null) {*/
-                Uri uri = cr.insert(Events.CONTENT_URI, values);
-                // get the event ID that is the last element in the Uri
-                eventId = Long.parseLong(uri.getLastPathSegment()) + "";
-                event.setEventId(eventId);
+            /*    if (eventId == null) {*/
+            Uri uri = cr.insert(Events.CONTENT_URI, values);
+            // get the event ID that is the last element in the Uri
+            eventId = Long.parseLong(uri.getLastPathSegment()) + "";
+            event.setEventId(eventId);
             /*} else {
                 String selection =
                         Events.CALENDAR_ID + " = '" + calendarId + "' AND " + CalendarContract.Instances._ID
@@ -254,7 +275,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         Uri uri = Events.CONTENT_URI;
         String selection =
                 Events.CALENDAR_ID + " = " + calendarId + " AND " + Events.UID_2445
-                        + " = '" + eventId+"'";
+                        + " = '" + eventId + "'";
 
         int updCount = activity.getContentResolver().delete(uri, selection, null);
         // Log.d("XXX", "updCount is " + updCount);
@@ -284,7 +305,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
                 };
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
-        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId+"'";
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId + "'";
 //        String[] selectionArgs = new String[]{"2"};
 
         cur = cr.query(uri, mProjection, selection, null, null);
@@ -334,7 +355,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
 
-        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + event.getEventId()+"'";
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + event.getEventId() + "'";
         int updCount = activity.getContentResolver()
                 .update(uri, contentValues, selection, null);
         return updCount;
@@ -346,7 +367,7 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
         }
 
         Uri uri = CalendarContract.Reminders.CONTENT_URI;
-        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId+"'";
+        String selection = CalendarContract.Reminders.EVENT_ID + " = '" + eventId + "'";
 
         int updCount = activity.getContentResolver().delete(uri, selection, null);
         return updCount;
