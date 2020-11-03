@@ -86,12 +86,14 @@ public class CalendarOperations { // implements PluginRegistry.RequestPermission
                 // Log.d("XXX", calendar.toString());
                 calendarList.add(calendar);
             }
+            return calendarList;
         } catch (Exception e) {
             Log.e("XXX", e.getMessage());
+            return calendarList;
         } finally {
             cur.close();
         }
-        return calendarList;
+
     }
 
     public ArrayList<CalendarEvent> getEvents(String calendarId) {
